@@ -5,9 +5,14 @@ namespace DotnetCoreWebApiRedoc.Models
     public class WeatherForecast
     {
         /// <summary>
-        /// Date of the weather
+        /// Weather's date and time
         /// </summary>
         public DateTime Date { get; set; }
+
+        /// <summary>
+        /// City
+        /// </summary>
+        public string City { get; set; }
 
         /// <summary>
         /// Celsius temperature

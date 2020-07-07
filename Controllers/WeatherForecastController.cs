@@ -16,6 +16,11 @@ namespace DotnetCoreWebApiRedoc.Controllers
             "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
         };
 
+        private static readonly string[] Cities = new[]
+        {
+            "Paris", "London", "Madrid", "Roma", "Berlin"
+        };
+
         private readonly ILogger<WeatherForecastController> _logger;
 
         public WeatherForecastController(ILogger<WeatherForecastController> logger)
@@ -34,10 +39,28 @@ namespace DotnetCoreWebApiRedoc.Controllers
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast
             {
                 Date = DateTime.Now.AddDays(index),
+                City = Cities[rng.Next(Cities.Length)],
                 TemperatureC = rng.Next(-20, 55),
                 Summary = Summaries[rng.Next(Summaries.Length)]
             })
             .ToArray();
+        }
+
+        /// <summary>
+        /// Push a new weather record
+        /// </summary>
+        /// <param name="record">New weather record</param>
+        [HttpPost]
+        public WeatherForecast Set([FromBody] WeatherRecord record)
+        {
+            var rng = new Random();
+            return new WeatherForecast
+            {
+                Date = record.Date.AddDays(1),
+                City = record.City,
+                TemperatureC = rng.Next(-20, 55),
+                Summary = Summaries[rng.Next(Summaries.Length)]
+            };
         }
     }
 }
