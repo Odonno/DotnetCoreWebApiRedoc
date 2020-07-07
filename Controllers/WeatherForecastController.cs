@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using DotnetCoreWebApiRedoc.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -51,6 +52,7 @@ namespace DotnetCoreWebApiRedoc.Controllers
         /// </summary>
         /// <param name="record">New weather record</param>
         [HttpPost]
+        [Authorize]
         public WeatherForecast Set([FromBody] WeatherRecord record)
         {
             var rng = new Random();

@@ -1,3 +1,6 @@
+using DotnetCoreWebApiRedoc.Auth;
+using DotnetCoreWebApiRedoc.Extensions;
+using DotnetCoreWebApiRedoc.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -6,6 +9,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 
 namespace DotnetCoreWebApiRedoc
@@ -21,7 +25,8 @@ namespace DotnetCoreWebApiRedoc
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            services.AddAuthentication(ApiKeyAuthenticationOptions.DefaultScheme)
+                .AddApiKeySupport(options => { });
 
             services.AddSwaggerGen(c =>
             {
@@ -37,7 +42,32 @@ namespace DotnetCoreWebApiRedoc
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 c.IncludeXmlComments(xmlPath);
+
+                var apiKeyScheme = new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = ApiKeyAuthenticationOptions.DefaultScheme
+                    },
+                    Description = "Api Key using the X-Api-Key header. Example: \"X-Api-Key: {key}\"",
+                    Name = "X-Api-Key",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = ApiKeyAuthenticationOptions.DefaultScheme
+                };
+                c.AddSecurityDefinition(ApiKeyAuthenticationOptions.DefaultScheme, apiKeyScheme);
+
+                var requirement = new OpenApiSecurityRequirement
+                {
+                    { apiKeyScheme, Enumerable.Empty<string>().ToList() }
+                };
+                c.AddSecurityRequirement(requirement);
             });
+
+            services.AddSingleton<IGetApiKeyQuery, InMemoryGetApiKeyQuery>();
+
+            services.AddControllers();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -51,6 +81,7 @@ namespace DotnetCoreWebApiRedoc
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseSwagger();
