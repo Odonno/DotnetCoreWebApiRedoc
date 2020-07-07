@@ -1,13 +1,17 @@
 using DotnetCoreWebApiRedoc.Auth;
 using DotnetCoreWebApiRedoc.Extensions;
 using DotnetCoreWebApiRedoc.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -30,6 +34,7 @@ namespace DotnetCoreWebApiRedoc
 
             services.AddSwaggerGen(c =>
             {
+                // Internal swagger gen (for the organization itself)
                 c.SwaggerDoc(
                     "v1",
                     new OpenApiInfo
@@ -38,6 +43,25 @@ namespace DotnetCoreWebApiRedoc
                         Version = "v1"
                     }
                 );
+                // External swagger gen (for partners)
+                c.SwaggerDoc(
+                    "partners",
+                    new OpenApiInfo
+                    {
+                        Title = "API",
+                        Version = "v1"
+                    }
+                );
+
+                c.DocInclusionPredicate((docName, apiDescription) =>
+                {
+                    if (docName == "partners")
+                    {
+                        return apiDescription.ActionDescriptor.EndpointMetadata.OfType<AuthorizeAttribute>().Any();
+                    }
+
+                    return true;
+                });
 
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
@@ -91,7 +115,7 @@ namespace DotnetCoreWebApiRedoc
             });
             app.UseReDoc(c =>
             {
-                c.SpecUrl = "/swagger/v1/swagger.json";
+                c.SpecUrl = "/swagger/partners/swagger.json";
             });
 
             app.UseEndpoints(endpoints =>
