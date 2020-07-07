@@ -23,6 +23,10 @@ namespace DotnetCoreWebApiRedoc.Controllers
             _logger = logger;
         }
 
+        /// <summary>
+        /// Retrieve current weather
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public IEnumerable<WeatherForecast> Get()
         {
