@@ -1,17 +1,14 @@
+using DotnetCoreWebApiRedoc.Attributes;
 using DotnetCoreWebApiRedoc.Auth;
 using DotnetCoreWebApiRedoc.Extensions;
 using DotnetCoreWebApiRedoc.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.SwaggerGen;
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -57,7 +54,7 @@ namespace DotnetCoreWebApiRedoc
                 {
                     if (docName == "partners")
                     {
-                        return apiDescription.ActionDescriptor.EndpointMetadata.OfType<AuthorizeAttribute>().Any();
+                        return apiDescription.ActionDescriptor.EndpointMetadata.OfType<PartnerApiAttribute>().Any();
                     }
 
                     return true;
